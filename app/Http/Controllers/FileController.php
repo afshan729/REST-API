@@ -3,46 +3,42 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Models\File;
 
 class FileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function upload(Request $request)
     {
-        //
+        $request->validate([
+            'fileName' => 'required',
+            'file' => 'required|file|max:' . config('app.MAX_FILE_SIZE'),
+        ]);
+
+        $fileName = $request->input('fileName');
+        $file = $request->file('file');
+
+        $filePath = $file->store(config('app.UPLOAD_DIR'));
+
+        $existingFile = File::where('fileName', $fileName)->first();
+        if ($existingFile) {
+            Storage::delete($existingFile->filePath);
+            $existingFile->update(['filePath' => $filePath]);
+        } else {
+            File::create(['fileName' => $fileName, 'filePath' => $filePath]);
+        }
+
+        return response()->json('File uploaded successfully', 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function download($fileName)
     {
-        //
-    }
+        $file = File::where('fileName', $fileName)->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        if (!$file) {
+            return response()->json('File not found', 404);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->download(storage_path('app/' . $file->filePath));
     }
 }
