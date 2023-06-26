@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\FileController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,3 +24,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::resource('/articles', ArticleController::class)->only([
     'index', 'show'
 ]);
+
+
+Route::post('/uploader', [FileController::class, 'upload']);
+
+Route::get('/downloader/{fileName}', [FileController::class, 'download']);
