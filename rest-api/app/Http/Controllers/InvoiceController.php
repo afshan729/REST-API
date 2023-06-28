@@ -14,7 +14,7 @@ class InvoiceController extends Controller
         }
         if ($request->has('salesperson')) {
           $invoices->where('salesperson', $request->input('salesperson'));
-          
+
         }
         if ($request->has('photographer')) {
             $invoices->where('photographer', $request->input('photographer'));
